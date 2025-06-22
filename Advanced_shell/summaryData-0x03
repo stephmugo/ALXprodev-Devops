@@ -1,0 +1,34 @@
+#!/bin/bash
+
+DIR="pokemon_data"
+CSV_FILE="pokemon_report.csv"
+echo "Name,Height (m),Weight (kg)" > "$CSV_FILE"
+
+awk_script='
+BEGIN { count = 0; total_height = 0; total_weight = 0; }
+{
+    if (NR > 1) {
+        split($0, fields, ",")
+        total_height += fields[2]
+        total_weight += fields[3]
+        count++
+    }
+    print $0
+}
+END {
+    avg_h = total_height / count
+    avg_w = total_weight / count
+    printf "\nAverage Height: %.2f m\nAverage Weight: %.2f kg\n", avg_h, avg_w
+}'
+
+for file in "$DIR"/*.json; do
+    name=$(jq -r '.name' "$file" | sed 's/.*/\u&/')
+    height=$(jq '.height' "$file")
+    weight=$(jq '.weight' "$file")
+    height_m=$(awk "BEGIN {printf \"%.1f\", $height / 10}")
+    weight_kg=$(awk "BEGIN {printf \"%.1f\", $weight / 10}")
+    echo "$name,$height_m,$weight_kg" >> "$CSV_FILE"
+done
+
+echo -e "\nCSV Report generated at: $CSV_FILE"
+awk -F, "$awk_script" "$CSV_FILE"

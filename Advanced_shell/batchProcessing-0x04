@@ -1,0 +1,24 @@
+#!/bin/bash
+
+POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+DIR="pokemon_data"
+mkdir -p "$DIR"
+
+fetch_pokemon() {
+    pokemon=$1
+    echo "Fetching data for $pokemon..."
+    curl -s -f "https://pokeapi.co/api/v2/pokemon/${pokemon}" -o "$DIR/${pokemon}.json"
+    if [ $? -eq 0 ]; then
+        echo "Saved data to $DIR/${pokemon}.json ✅"
+    else
+        echo "Error: Failed to fetch data for $pokemon" >> errors.txt
+    fi
+}
+
+for pokemon in "${POKEMON_LIST[@]}"
+do
+    fetch_pokemon "$pokemon" &
+done
+
+wait
+echo "All background fetch processes completed."
