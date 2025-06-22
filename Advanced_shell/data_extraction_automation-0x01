@@ -1,19 +1,14 @@
 #!/bin/bash
 
-# Extract values using jq
-name=$(jq -r '.name' data.json)
-type=$(jq -r '.types[0].type.name' data.json)
-height=$(jq '.height' data.json)
-weight=$(jq '.weight' data.json)
+if [ ! -f data.json ]; then
+    echo "data.json not found. Run fetch_pokemon.sh first."
+    exit 1
+fi
 
-# Capitalize first letter of name and type
-name=$(echo "$name" | sed 's/.*/\u&/')
-type=$(echo "$type" | sed 's/.*/\u&/')
-
-# Convert height from decimeters to meters, 1 decimal place
-height_m=$(awk "BEGIN {printf \"%.1f\", $height / 10}")
-# Convert weight from hectograms to kg, no decimals
-weight_kg=$(awk "BEGIN {printf \"%.0f\", $weight / 10}")
+name=$(jq -r '.name' data.json | sed 's/.*/\u&/')
+type=$(jq -r '.types[0].type.name' data.json | sed 's/.*/\u&/')
+height=$(jq -r '.height' data.json | awk '{printf "%.1f", $1 / 10}')
+weight=$(jq -r '.weight' data.json | awk '{printf "%.1f", $1 / 10}')
 
 # Final output
-echo "$name is of type $type, weighs ${weight_kg}kg, and is ${height_m}m tall."
+echo "$name is of type $type, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
